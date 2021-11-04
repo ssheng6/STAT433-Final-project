@@ -1,0 +1,13 @@
+---
+title: "Short_Description"
+author: "ssheng6"
+date: "11/3/2021"
+output: html_document
+---
+
+```{r }
+# The data summarized lab Data, USDA AMS data base, literature research information. 
+# With this data set, we expect to create a visualization using shiny app with prediction of economic impact estimation. 
+
+```
+
