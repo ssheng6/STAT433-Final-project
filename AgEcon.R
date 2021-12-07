@@ -5,30 +5,33 @@ library(mapproj)
 
 
 # Source helper functions -----
-
+library(maps)
+library(mapproj)
+source("helpers.R")
 
 # Load data ----
-counties <- read.csv("hog price 10 years.csv")
+counties <- read.csv("data/price.csv")
 
 
 # User interface ----
 ui <- fluidPage(
-  titlePanel("Agrculture Econmics -  Corn prices vs Meat prices "),
+  titlePanel("Agrculture Econmics -  Corn prices and Meat prices prediction"),
   
   sidebarLayout(
     sidebarPanel(
-      helpText("Create demographic maps with 
-        information from the 2010 US Census."),
+      helpText("predict meat price info with Corn price change"),
       
-      selectInput("var", 
-                  label = "Choose a variable to display",
-                  choices = c("Percent White", "Percent Black",
-                              "Percent Hispanic", "Percent Asian"),
-                  selected = "Percent White"),
+
+      checkboxGroupInput("chose region", 
+                                h3("chose region"), 
+                                choices = list("west_corn" = 1, 
+                                               "east_corn" = 2, 
+                                               "iamn_corn" = 3),
+                                selected = 1),
       
-      sliderInput("range", 
-                  label = "Range of interest:",
-                  min = 0, max = 100, value = c(0, 100))
+      dateRangeInput("range", 
+                  label = "date range of interest:",
+                  h3("Date range"))
     ),
     
     mainPanel(plotOutput("map"))
@@ -39,19 +42,16 @@ ui <- fluidPage(
 
 # Server logic ----
 server <- function(input, output) {
-  output$map <- renderPlot({
-    args <- switch(input$var,
-                   "Percent White" = list(counties$white, "darkgreen", "% White"),
-                   "Percent Black" = list(counties$black, "black", "% Black"),
-                   "Percent Hispanic" = list(counties$hispanic, "darkorange", "% Hispanic"),
-                   "Percent Asian" = list(counties$asian, "darkviolet", "% Asian"))
+  output$plot <- renderPlot({
+    counties <- getSymbols(input$symb, src = "yahoo",
+                       from = input$dates[1],
+                       to = input$dates[2],
+                       auto.assign = FALSE)
     
-    args$min <- input$range[1]
-    args$max <- input$range[2]
-    
-    do.call(percent_map, args)
+    chartSeries(counties, theme = chartTheme("white"),
+                type = "line", log.scale = input$log, TA = NULL)
   })
 }
 
 # Run app ----
-shinyApp(ui, server)
+shinyApp(ui=ui, server=server)
